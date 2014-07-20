@@ -6,7 +6,7 @@
 	$calYear = date('Y');
 	if (array_key_exists('year', $_GET))
 		$calYear = $_GET['year'];
-	$calendar = new Calendar($calYear);
+	$calendar = new Calendar();
 	if (array_key_exists('action', $_GET))
 	{
 		$heating = new Heating(true);
@@ -54,13 +54,14 @@
 </head>
 <body>
 	<div class="center-block text-center">
-	<form class="form-inline" role="form">
-		<div class="input-group">
-			<div class="input-group-addon">Speak</div>
-			<input type="text" placeholder="Speak and order !">
-		</div>
-		<button type="submit" class="btn btn-default">Execute</button>
-	</form>
+		<form class="form-inline" role="form">
+			<div class="input-group has-feedback">
+				<div class="input-group-addon">Speak</div>
+				<input id="speechText" type="text" placeholder="Speak and order !" class="form-control">
+				<span id="speechButton" class="glyphicon glyphicon-ban-circle speech-mic form-control-feedback"></span>
+			</div>
+			<button id="orderButton" type="button" class="btn btn-default">Execute</button>
+		</form>
 	</div>
 	<p>
 	Assign temperature: 
@@ -102,7 +103,7 @@
 			{
 				$cDate = $ret[$posMonth]["time-$posDay"];
 				$cText = $ret[$posMonth][$posDay];
-				echo ' id="d'.$cDate.'" class="';
+				echo ' id="d'.$cDate.'" class="calDate ';
 				if (($typeDate = $heating->getDateType($cDate)))
 					echo 'type' . $typeDate;
 				else if ($calendar->isWeekend($cDate))
@@ -122,9 +123,11 @@
 ?>
 	</table></div>
 	<script>
+var recognition = null;
+
 $(function()
 {
-	$('.calendar table td').click(function()
+	$('.calDate').click(function()
 		{
 			var calDate = $(this).attr('id').substring(1);
 			var typeClass = $(this).attr('class');
@@ -151,6 +154,81 @@ $(function()
 					});
 
 		});
+
+        try
+        {
+		recognition = new webkitSpeechRecognition();
+		recognition.continuous = false;
+		recognition.interimResults = false;
+		recognition.lang = '<?= SPEAK_LANGUAGE ?>';
+
+		recognition.onresult = function (event)
+			{
+				for (var i = event.resultIndex; i < event.results.length; ++i)
+					if (event.results[i].isFinal)
+					{
+						$('#speechText').val(event.results[i][0].transcript);
+						$('#orderButton').click();
+						break;
+					}
+                        };
+		recognition.onend = function()
+			{
+				$('#speechButton').removeClass('speech-mic-works').addClass('speech-mic')
+					.removeClass('glyphicon-remove-circle').addClass('glyphicon-ok-circle');
+			};
+
+		$('.speech-mic').click(function()
+			{
+				$('#speechButton').removeClass('speech-mic').addClass('speech-mic-works')
+					.removeClass('glyphicon-ok-circle').addClass('glyphicon-remove-circle');
+				recognition.start();
+			});
+		$('.speech-mic-works').click(function() { recognition.stop(); });
+
+		$('#speechButton').attr('class', 'glyphicon glyphicon-ok-circle speech-mic');
+        }
+        catch(e)
+        {
+        }
+
+	$('#orderButton').click(function()
+		{
+			var orderCmd = $('#speechText').val().trim();
+
+			if (orderCmd != null && orderCmd.length > 0)
+                                $.ajax({
+                                                url: 'order.php',
+                                                type: 'GET',
+                                                data: 'msg=' + orderCmd,
+                                                dataType: 'xml',
+                                                success: function(data)
+                                                        {
+                                                                $(data).find('tell').each(function()
+                                                                        {
+										try
+										{
+											var msg = new SpeechSynthesisUtterance();
+
+											msg.voiceURI = 'native';
+											msg.volume = 1; // 0 to 1
+											msg.rate = 1; // 0.1 (slow) to 10 (fast)
+											msg.pitch = 2; //0 to 2
+											msg.text = $(this).text();
+											msg.lang = '<?= SPEAK_LANGUAGE ?>';
+											window.speechSynthesis.speak(msg);
+										}
+										catch (e)
+										{
+											alert($(this).text());
+										}
+                                                                        });
+                                                        },
+                                                error: function() { alert('Arrghhh bug !'); }
+                                        });
+
+		});
+
 });
 	</script>
 </body>
