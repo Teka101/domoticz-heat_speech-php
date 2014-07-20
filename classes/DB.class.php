@@ -1,12 +1,14 @@
 <?php
 class DataBase
 {
+	private $readWrite;
 	private	$dbHandle;
 	private $errorMsg;
 	private $hasBuggedSubStr;
 	
 	public function	__construct($readWrite = false)
 	{
+		$this->readWrite = $readWrite;
 		$this->errorMsg = null;
 		$this->dbHandle = null;
 		$this->connectToDataBase($readWrite);
@@ -55,30 +57,36 @@ class DataBase
 
 	public function setDateTemperature($date, $temperature)
 	{
-		try
+		if ($this->readWrite)
 		{
-			$query = $this->dbHandle->query("INSERT OR REPLACE INTO heating(date, temperature) VALUES($date, $temperature)");
-			if ($query != null)
-				return true;
-		}
-		catch (PDOException $e)
-		{
-			$this->errorMsg = $e->getMessage();
+			try
+			{
+				$query = $this->dbHandle->query("INSERT OR REPLACE INTO heating(date, temperature) VALUES($date, $temperature)");
+				if ($query != null)
+					return true;
+			}
+			catch (PDOException $e)
+			{
+				$this->errorMsg = $e->getMessage();
+			}
 		}
 		return false;
 	}
 
 	public function deleteDate($date)
 	{
-		try
+		if ($this->readWrite)
 		{
-			$query = $this->dbHandle->query("DELETE FROM heating WHERE date=$date");
-			if ($query != null)
-				return true;
-		}
-		catch (PDOException $e)
-		{
-			$this->errorMsg = $e->getMessage();
+			try
+			{
+				$query = $this->dbHandle->query("DELETE FROM heating WHERE date=$date");
+				if ($query != null)
+					return true;
+			}
+			catch (PDOException $e)
+			{
+				$this->errorMsg = $e->getMessage();
+			}
 		}
 		return false;
 	}
