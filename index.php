@@ -53,19 +53,20 @@
 	<script type="text/javascript" src="web/jquery-2.1.1.min.js"></script>
 </head>
 <body>
-	<div class="center-block text-center">
+	<div class="center-block text-center" style="padding-top: 10px">
 		<form class="form-inline" role="form">
-			<div class="input-group has-feedback">
-				<div class="input-group-addon">Speak</div>
+			<div class="input-group">
+				<span class="input-group-addon">Speak</span>
 				<input id="speechText" type="text" placeholder="Speak and order !" class="form-control">
-				<span id="speechButton" class="glyphicon glyphicon-ban-circle speech-mic form-control-feedback"></span>
+				<span class="input-group-addon">
+					<span id="speechButton" class="glyphicon glyphicon-ban-circle speech-mic"></span>
+				</span>
 			</div>
 			<button id="orderButton" type="button" class="btn btn-default">Execute</button>
 		</form>
-	</div>
-	<p>
-	Assign temperature: 
-	<select id="typeDay">
+		<div class="container" style="padding-top: 20px">
+			Assign temperature: 
+			<select id="typeDay">
 <?php
 	$types = $heating->getTypes();
 	foreach ($types as $type)
@@ -75,11 +76,14 @@
 		echo '</option>';
 	}
 ?>
-	</select>
-	</p>
-	<div class="row">
-		<div class="col-xs-6 text-left"><a class="btn btn-default" href="<?= $_SERVER['PHP_SELF'] ?>?year=<?= ($calYear - 1) ?>">&lt;&lt;</a></div>
-		<div class="col-xs-6 text-right"><a class="btn btn-default" href="<?= $_SERVER['PHP_SELF'] ?>?year=<?= ($calYear + 1) ?>">&gt;&gt;</a></div>
+			</select>
+		</div>
+	</div>
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-xs-6 text-left"><a class="btn btn-default" href="<?= $_SERVER['PHP_SELF'] ?>?year=<?= ($calYear - 1) ?>">&lt;&lt;</a></div>
+			<div class="col-xs-6 text-right"><a class="btn btn-default" href="<?= $_SERVER['PHP_SELF'] ?>?year=<?= ($calYear + 1) ?>">&gt;&gt;</a></div>
+		</div>
 	</div>
 	<div align="center"><table class="table table-bordered table-condensed text-center" style="width: auto">
 <?php
