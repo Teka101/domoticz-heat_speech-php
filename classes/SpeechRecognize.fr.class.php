@@ -6,5 +6,6 @@
 	$SR_WORDS['DURATION_DAY'] = array('jour', 'jours', 'journee');
 	$SR_WORDS['DURATION_WEEK'] = array('semaine', 'semaines');
 	$SR_WORDS['DURATION_MONTH'] = array('mois');
+	$SR_WORDS['MOVIE'] = array('film', 'films');
 	$SR_WORDS['NUMBERS'] = json_decode('{ "1": ["1","un","une"], "2": ["2","deux"], "3": ["3","trois"], "4": ["4","quatre"], "5": ["5","cinq"], "6": ["6","six"], "7": ["7","sept"], "8": ["8","huit"], "9": ["9","neuf"] }');
 ?>

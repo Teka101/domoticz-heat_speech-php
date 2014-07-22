@@ -15,7 +15,8 @@
 		$SR_SENTENCES[] = array('text' => '^TO_LEAVE ([0-9]+) DURATION_DAY$', 'action' => 'cbLeaveHouseDay');
 		$SR_SENTENCES[] = array('text' => '^TO_LEAVE ([0-9]+) DURATION_WEEK$', 'action' => 'cbLeaveHouseWeek');
 		$SR_SENTENCES[] = array('text' => '^TO_LEAVE ([0-9]+) DURATION_MONTH$', 'action' => 'cbLeaveHouseMonth');
-		$SR_SENTENCES[] = array('text' => '^TO_WATCH ([0-9]+)', 'action' => 'cbWatchTV');
+		$SR_SENTENCES[] = array('text' => '^TO_WATCH .*MOVIE ([0-9]+)$', 'action' => 'cbWatchMovie');
+		$SR_SENTENCES[] = array('text' => '^TO_WATCH ([0-9]+)$', 'action' => 'cbWatchTV');
 
 		$sp = new SpeechRecognize($SR_SENTENCES, $SR_WORDS);
 		if (!$sp->parseAndExecute($_GET['msg']))
@@ -59,12 +60,21 @@ function cbLeaveHouse($days)
 	echo "<tell>Température réglée à $temp degré pour une durée de $days jours.</tell>";
 }
 
-function cbWatchTV($matches)
+function cbWatchMovie($matches)
 {
-	$channel = PhilipsTv::watch(PHILIPS_TV, $matches[1], 30);
+	$channel = PhilipsTv::watch(PHILIPS_TV, $matches[1], 30, true);
 	if ($channel)
 		echo "<tell>Passage à la chaine $channel.</tell>";
 	else
-		echo "<tell>Oups cela ne fonctionne pas !</tell>";
+		echo "<tell>La télé n'est pas allumée.</tell>";
+}
+
+function cbWatchTV($matches)
+{
+	$channel = PhilipsTv::watch(PHILIPS_TV, $matches[1], 25, false);
+	if ($channel)
+		echo "<tell>Passage à la chaine $channel.</tell>";
+	else
+		echo "<tell>La télé n'est pas allumée.</tell>";
 }
 ?>
