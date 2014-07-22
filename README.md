@@ -1,13 +1,17 @@
 domoticz-heat_speech-php
 ========================
 
-Add functionnality to Domoticz : control heating system and speech recognition for control
+Add functionnality to Domoticz : control heating system and speech recognition for control.
 
-CONFIGURATION
+
+Status: beta
+
+
+Configuration
 -------------
 Edit file 'config.php'
 
-INSTALLATION
+Installation
 ------------
 Add line to crontab:
 	0 * * * * /usr/bin/wget -O /dev/null 'http://localhost/domoticz-heat_speech-php/update.php' >/dev/null 2>/dev/null
