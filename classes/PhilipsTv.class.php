@@ -1,95 +1,123 @@
 <?php
 class PhilipsTv
 {
-	static public function watch($tvIp, $channelPreset, $volume = null)
+	static public function watch($tvIp, $channelPreset, $volume = null, $activeAmbilight)
 	{
 		$channels = PhilipsTv::getChannels($tvIp);
 		if ($channels)
 			foreach ($channels as $channelId => &$channel)
 				if ($channel->preset == $channelPreset)
 				{
-					if (PhilipsTv::setChannel($tvIp, $channelId))
-					{
-						if ($volume)
-							PhilipsTv::setAudioVolume($tvIp, $volume);
-						PhilipsTv::setAmbilight($tvIp, 'expert');
-						return $channel->name;
-					}
-					break;
+					$currentChannelId = PhilipsTv::getCurrentChannel($tvIp);
+					if ($channelId != $currentChannelId)
+						if (!PhilipsTv::setChannel($tvIp, $channelId))
+							return null;
+					if ($volume)
+						PhilipsTv::setAudioVolume($tvIp, $volume);
+					PhilipsTv::setAmbilight($tvIp, $activeAmbilight);
+					return $channel->name;
 				}
 		return null;
 	}
 
-	static private function setAmbilight($tvIp, $mode)
+	static private function setAmbilight($tvIp, $activeAmbilight)
 	{
-		$ch = curl_init("http://$tvIp:1925/1/ambilight/cached");
-		if ($ch)
+		PhilipsTv::doRequest($tvIp, '/1/ambilight/mode', '{"current": "internal"}');
+		$ambilightJson = PhilipsTv::doRequest($tvIp, '/1/ambilight/processed');
+		if ($ambilightJson)
 		{
-			curl_setopt($ch, CURLOPT_POST, true);
-			curl_setopt($ch, CURLOPT_POSTFIELDS, "{\"r\": 255, \"g\": 255, \"b\": 255}");
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-			curl_setopt($ch, CURLOPT_TIMEOUT, 3);
-			$htmlResponse = curl_exec($ch);
-			curl_close($ch);
-		}
-		$ch = curl_init("http://$tvIp:1925/1/ambilight/mode");
-		if ($ch)
-		{
-			curl_setopt($ch, CURLOPT_POST, true);
-			curl_setopt($ch, CURLOPT_POSTFIELDS, "{\"current\": \"$mode\"}");
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-			curl_setopt($ch, CURLOPT_TIMEOUT, 3);
-			$htmlResponse = curl_exec($ch);
-			curl_close($ch);
+			$ambilight = json_decode($ambilightJson);
+			if (!$ambilight)
+				return false;
+
+			$ambilightIsEmpty = (PhilipsTv::ambilightIsEmpty($ambilight->layer1->left)
+						&& PhilipsTv::ambilightIsEmpty($ambilight->layer1->top)
+						&& PhilipsTv::ambilightIsEmpty($ambilight->layer1->right)
+						&& PhilipsTv::ambilightIsEmpty($ambilight->layer1->bottom));
+
+			if ($activeAmbilight)
+			{
+				if ($ambilightIsEmpty)
+				{
+					PhilipsTv::doRequest($tvIp, '/1/input/key', '{"key": "AmbilightOnOff"}');
+					sleep(1);
+					PhilipsTv::doRequest($tvIp, '/1/input/key', '{"key": "CursorDown"}');
+					PhilipsTv::doRequest($tvIp, '/1/input/key', '{"key": "Confirm"}');
+				}
+			}
+			else
+			{
+				if (!$ambilightIsEmpty)
+				{
+					PhilipsTv::doRequest($tvIp, '/1/input/key', '{"key": "AmbilightOnOff"}');
+					sleep(1);
+					PhilipsTv::doRequest($tvIp, '/1/input/key', '{"key": "CursorUp"}');
+					PhilipsTv::doRequest($tvIp, '/1/input/key', '{"key": "Confirm"}');
+				}
+			}
 			return true;
 		}
 		return false;
+	}
+
+	static private function ambilightIsEmpty($ambiLeftRightTopBottom)
+	{
+		foreach ($ambiLeftRightTopBottom as $ambiId => &$ambiRgb)
+			if ($ambiRgb->r != 0 || $ambiRgb->g != 0 || $ambiRgb->b != 0)
+				return false;
+		return true;
 	}
 
 	static private function setAudioVolume($tvIp, $volume)
 	{
-		$ch = curl_init("http://$tvIp:1925/1/audio/volume");
-		if ($ch)
-		{
-			curl_setopt($ch, CURLOPT_POST, true);
-			curl_setopt($ch, CURLOPT_POSTFIELDS, "{\"muted\": false, \"current\": $volume}");
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-			curl_setopt($ch, CURLOPT_TIMEOUT, 3);
-			$htmlResponse = curl_exec($ch);
-			curl_close($ch);
+		$htmlResponse = PhilipsTv::doRequest($tvIp, '/1/audio/volume', "{\"muted\": false, \"current\": $volume}");
+		if ($htmlResponse)
 			return true;
-		}
 		return false;
+	}
+
+	static private function getCurrentChannel($tvIp)
+	{
+		$jsonChannel = PhilipsTv::doRequest($tvIp, '/1/channels/current');
+		if ($jsonChannel)
+		{
+			$json = json_decode($jsonChannel);
+			return $json->id;
+		}
+		return null;
 	}
 
 	static private function setChannel($tvIp, $channelId)
 	{
-return true;
-		$ch = curl_init("http://$tvIp:1925/1/channels/current");
-		if ($ch)
-		{
-			curl_setopt($ch, CURLOPT_POST, true);
-			curl_setopt($ch, CURLOPT_POSTFIELDS, "{\"id\": \"$channelId\"}");
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-			curl_setopt($ch, CURLOPT_TIMEOUT, 3);
-			$htmlResponse = curl_exec($ch);
-			curl_close($ch);
+		$htmlResponse = PhilipsTv::doRequest($tvIp, '/1/channels/current', "{\"id\": \"$channelId\"}");
+		if ($htmlResponse)
 			return true;
-		}
 		return false;
 	}
 
 	static private function getChannels($tvIp)
 	{
-		$ch = curl_init("http://$tvIp:1925/1/channels");
+		$jsonChannels = PhilipsTv::doRequest($tvIp, '/1/channels');
+		if ($jsonChannels)
+			return json_decode($jsonChannels);
+		return null;
+	}
+
+	static private function doRequest($tvIp, $url, $postData = null)
+	{
+		$ch = curl_init("http://$tvIp:1925$url");
 		if ($ch)
 		{
+			if ($postData)
+			{
+				curl_setopt($ch, CURLOPT_POST, true);
+				curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+			}
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-			curl_setopt($ch, CURLOPT_TIMEOUT, 3);
-			$jsonChannels = curl_exec($ch);
+			curl_setopt($ch, CURLOPT_TIMEOUT, 1);
+			$response = curl_exec($ch);
 			curl_close($ch);
-			if ($jsonChannels)
-				return json_decode($jsonChannels);
+			return $response;
 		}
 		return null;
 	}
