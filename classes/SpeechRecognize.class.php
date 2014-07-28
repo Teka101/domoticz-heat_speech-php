@@ -16,6 +16,7 @@ class SpeechRecognize
 		$sentence = $this->normalizeText($sentence);
 		$words = explode(' ', $sentence);
 		$words = $this->parse($words);
+		//print_r($words);
 		if ($words && count($words) > 0)
 		{
 			$sentence = implode(' ', $words);
@@ -45,6 +46,8 @@ class SpeechRecognize
 
 	private function parseWord($word)
 	{
+		if (is_numeric($word))
+			return $word;
 		foreach ($this->allWords as $type => &$wordsValues)
 		{
 			if (is_array($wordsValues))
@@ -65,7 +68,8 @@ class SpeechRecognize
 	private function normalizeText($sentence)
 	{
 		$sentence = iconv('UTF-8', 'ASCII//TRANSLIT', $sentence);
-		$sentence = str_replace("'", '', strtolower($sentence));
+		$sentence = str_replace("'", ' ', strtolower($sentence));
+		$sentence = str_replace(array('?', '.', ','), '', $sentence);
 		return $sentence;
 	}
 }

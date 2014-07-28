@@ -40,7 +40,7 @@
 <body>
  <div class="center-block text-center" style="padding-top: 10px">
   <form class="form-inline" role="form">
-   <div class="input-group">
+   <div class="input-group col-xs-3">
     <span class="input-group-addon">Speak</span>
     <input id="speechText" type="text" placeholder="Speak and order !" class="form-control">
     <span class="input-group-addon">

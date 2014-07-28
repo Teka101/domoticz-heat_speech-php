@@ -1,6 +1,11 @@
 <?php
 class PhilipsTv
 {
+	static public function stopTv($tvIp)
+	{
+		return PhilipsTv::doRequest($tvIp, '/1/input/key', '{"key": "Standby"}');
+	}
+
 	static public function watch($tvIp, $channelPreset, $volume = null, $activeAmbilight)
 	{
 		$channels = PhilipsTv::getChannels($tvIp);

@@ -36,3 +36,10 @@ td.type21
 	border: 1px solid;
 	cursor: crosshair;
 }
+
+td.type22
+{
+	border: 1px solid;
+	cursor: crosshair;
+	background-color: #FF4848;
+}

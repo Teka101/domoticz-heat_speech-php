@@ -11,5 +11,24 @@ class Domoticz
 			curl_close($ch);
 		}
 	}
+
+	static public function getHomeTemperature()
+	{
+		$ch = curl_init(DOMOTICZ_SERVER . '/json.htm?type=devices&rid=' . DOMOTICZ_HEAT_HOME_IDX);
+		if ($ch)
+		{
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+			$response = curl_exec($ch);
+			curl_close($ch);
+			if ($response)
+			{
+				$json = json_decode($response);
+				if (is_array($json->result))
+					return $json->result[0]->Temp;
+				return $json->result->Temp;
+			}
+		}
+		return false;
+	}
 }
 ?>

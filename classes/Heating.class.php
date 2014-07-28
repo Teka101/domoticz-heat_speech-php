@@ -13,25 +13,12 @@ class Heating
 	public function	__construct($readWrite = false)
 	{
 		$this->typeDefault = 21;
-		$this->types = [ '12', '19', '20', '21' ];
+		$this->types = [ '12', '19', '20', '21', '22' ];
 		$this->db = new DataBase($readWrite);
 		$this->load();
 	}
 
-	public function getCurrentTemperature()
-	{
-		$currentDate = localtime(time(), true);
-		$hh = $currentDate['tm_hour'];
-		$now = mktime(0, 0, 0, $currentDate['tm_mon'] + 1, $currentDate['tm_mday'], 1900 + $currentDate['tm_year']);
-		$temperature = $this->getDateType($now);
-		if (!$temperature)
-			$temperature = $this->getDefaultType();
-		if ($temperature >= 19 && ($hh <= 5 || $hh >= 21))
-			$temperature--;
-		return $temperature;
-	}
-
-	public function getBestTempatures($nbDays)
+	private function getBestTempatures($nbDays)
 	{
 		if ($nbDays > 8)
 			return 12;
@@ -52,8 +39,51 @@ class Heating
 		}
 	}
 
+	public function getCurrentTemperature()
+	{
+		$currentDate = localtime(time(), true);
+		$hh = $currentDate['tm_hour'];
+		$now = mktime(0, 0, 0, $currentDate['tm_mon'] + 1, $currentDate['tm_mday'], 1900 + $currentDate['tm_year']);
+		$temperature = $this->getDateType($now);
+		if (!$temperature)
+			$temperature = $this->getDefaultType();
+		if ($temperature >= 19 && ($hh <= 5 || $hh >= 21))
+			$temperature--;
+		return $temperature;
+	}
+
+	public function addToCurrentTemperature($offset)
+	{
+		$newTemp = $this->getCurrentTemperature() + $offset;
+		if ($this->setCurrentTemperature($newTemp))
+			return $newTemp;
+		return false;
+	}
+
+	public function setCurrentTemperature($temperature)
+	{
+		$currentDate = localtime(time(), true);
+		$now = mktime(0, 0, 0, $currentDate['tm_mon'] + 1, $currentDate['tm_mday'], 1900 + $currentDate['tm_year']);
+		return $this->setDateTemperature($now, $temperature);
+	}
+
+	public function setBestTempratureForDates($dates)
+	{
+		$days = count($dates);
+		$temp = $this->getBestTempatures($days);
+		$lastDate = end($dates);
+		foreach ($dates as $date)
+			if ($date == $lastDate && $temp == $this->types[0])
+				$this->setDateTemperature($date, $this->types[1]);
+			else
+				$this->setDateTemperature($date, $temp);
+		return $temp;
+	}
+
 	public function setDateTemperature($date, $temperature)
 	{
+		if (!in_array($temperature, $this->types))
+			return false;
 		if ($temperature == $this->typeDefault)
 			return $this->db->deleteDate($date);
 		return $this->db->setDateTemperature($date, $temperature);

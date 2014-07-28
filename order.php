@@ -1,6 +1,7 @@
 <?php
 	require 'config.php';
 	require 'classes/Calendar.class.php';
+	require 'classes/Domoticz.class.php';
 	require 'classes/Heating.class.php';
 	require 'classes/SpeechRecognize.class.php';
 	require 'classes/SpeechRecognize.' . SPEAK_LANGUAGE . '.class.php';
@@ -12,11 +13,17 @@
 	{
 		$SR_SENTENCES = array();
 		$SR_SENTENCES[] = array('text' => '^EAGGER_1$', 'action' => 'cbEagger');
+		$SR_SENTENCES[] = array('text' => '^TO_LEAVE$', 'action' => 'cbLeaveHouse');
+		$SR_SENTENCES[] = array('text' => '^TO_LEAVE HOUSE$', 'action' => 'cbLeaveHouse');
 		$SR_SENTENCES[] = array('text' => '^TO_LEAVE ([0-9]+) DURATION_DAY$', 'action' => 'cbLeaveHouseDay');
 		$SR_SENTENCES[] = array('text' => '^TO_LEAVE ([0-9]+) DURATION_WEEK$', 'action' => 'cbLeaveHouseWeek');
 		$SR_SENTENCES[] = array('text' => '^TO_LEAVE ([0-9]+) DURATION_MONTH$', 'action' => 'cbLeaveHouseMonth');
 		$SR_SENTENCES[] = array('text' => '^TO_WATCH .*MOVIE ([0-9]+)$', 'action' => 'cbWatchMovie');
 		$SR_SENTENCES[] = array('text' => '^TO_WATCH ([0-9]+)$', 'action' => 'cbWatchTV');
+		$SR_SENTENCES[] = array('text' => '^TO_DO HEATING ([0-9]+)$', 'action' => 'cbHeatingAt');
+		$SR_SENTENCES[] = array('text' => '^COLD$', 'action' => 'cbHeatingMore');
+		$SR_SENTENCES[] = array('text' => '^HEAT$', 'action' => 'cbHeatingLess');
+		$SR_SENTENCES[] = array('text' => '^HOW HOUSE$', 'action' => 'cbHowHouse');
 
 		$sp = new SpeechRecognize($SR_SENTENCES, $SR_WORDS);
 		if (!$sp->parseAndExecute($_GET['msg']))
@@ -34,30 +41,36 @@ function cbEagger()
 
 function cbLeaveHouseDay($matches)
 {
-	cbLeaveHouse($matches[1] * 1);
+	cbLeaveHouseHeat($matches[1] * 1);
 }
 
 function cbLeaveHouseWeek($matches)
 {
-	cbLeaveHouse($matches[1] * 7);
+	cbLeaveHouseHeat($matches[1] * 7);
 }
 
 function cbLeaveHouseMonth($matches)
 {
-	cbLeaveHouse($matches[1] * 30);
+	cbLeaveHouseHeat($matches[1] * 30);
 }
 
-function cbLeaveHouse($days)
+function cbLeaveHouseHeat($days)
 {
 	$heating = new Heating(true);
 	$calendar = new Calendar();
 
-	$temp = $heating->getBestTempatures($days);
 	$dates = $calendar->getDatesFromNow($days);
-	foreach ($dates as $date)
-		$heating->setDateTemperature($date, $temp);
-
+	$temp = $heating->setBestTempratureForDates($dates);
 	echo "<tell>Température réglée à $temp degré pour une durée de $days jours.</tell>";
+}
+
+function cbLeaveHouse($matches)
+{
+	$sent = '';
+	if (PhilipsTv::stopTv(PHILIPS_TV))
+		$sent .= 'J\'ai éteins la télévision. ';
+	$sent .= 'Au revoir.';
+	echo "<tell>$sent</tell>";
 }
 
 function cbWatchMovie($matches)
@@ -76,5 +89,47 @@ function cbWatchTV($matches)
 		echo "<tell>Passage à la chaine $channel.</tell>";
 	else
 		echo "<tell>La télé n'est pas allumée.</tell>";
+}
+
+function cbHeatingAt($matches)
+{
+	$heating = new Heating(true);
+	$newTemp = $matches[1];
+	if ($heating->setCurrentTemperature($newTemp))
+		echo "<tell>Le chauffage est régle à $newTemp degré.</tell>";
+	else
+		echo "<tell>Le chauffage reste réglé à " . $heating->getCurrentTemperature() . " degré car la température demandée n'est pas connue.</tell>";
+}
+
+function cbHeatingMore($matches)
+{
+	cbHeating(1);
+}
+
+function cbHeatingLess($matches)
+{
+	cbHeating(-1);
+}
+
+function cbHeating($offset)
+{
+	$heating = new Heating(true);
+	$newTemp = $heating->addToCurrentTemperature($offset);
+
+	if (is_numeric($newTemp))
+		echo "<tell>Le chauffage est réglé à $newTemp degré.</tell>";
+	else if ($offset > 0)
+		echo "<tell>Le chauffage est déjà au maximum !</tell>";
+	else if ($offset < 0)
+		echo "<tell>Le chauffage est déjà au minimum !</tell>";
+}
+
+function cbHowHouse($matches)
+{
+	$temp = Domoticz::getHomeTemperature();
+	if ($temp)
+		echo "<tell>La température ambiante est de $temp degré.</tell>";
+	else
+		echo "<tell>Impossible de récupérer la température...</tell>";
 }
 ?>
