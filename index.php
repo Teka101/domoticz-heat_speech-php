@@ -40,9 +40,9 @@
 <body>
  <div class="center-block text-center" style="padding-top: 10px">
   <form class="form-inline" role="form">
-   <div class="input-group col-xs-3">
+   <div class="input-group">
     <span class="input-group-addon">Speak</span>
-    <input id="speechText" type="text" placeholder="Speak and order !" class="form-control">
+    <input id="speechText" type="text" placeholder="Speak and order !" class="form-control" style="width: 265px">
     <span class="input-group-addon">
      <span id="speechButton" class="glyphicon glyphicon-ban-circle speech-mic"></span>
     </span>
