@@ -1,11 +1,12 @@
 <?php
-	require 'config.php';
-	require 'classes/Calendar.class.php';
-	require 'classes/Domoticz.class.php';
-	require 'classes/Heating.class.php';
-	require 'classes/SpeechRecognize.class.php';
-	require 'classes/SpeechRecognize.' . SPEAK_LANGUAGE . '.class.php';
-	require 'classes/PhilipsTv.class.php';
+	require_once 'config.php';
+	require_once 'classes/Calendar.class.php';
+	require_once 'classes/Domoticz.class.php';
+	require_once 'classes/Heating.class.php';
+	require_once 'classes/SpeechRecognize.class.php';
+	require_once 'classes/SpeechRecognize.' . SPEAK_LANGUAGE . '.class.php';
+	require_once 'classes/PhilipsTv.class.php';
+	require_once 'classes/TvPrograms.class.php';
 
 	header('Content-Type: text/xml; charset=UTF-8');
 	echo '<?xml version="1.0" encoding="UTF-8" ?><responses>';
@@ -24,6 +25,7 @@
 		$SR_SENTENCES[] = array('text' => '^COLD$', 'action' => 'cbHeatingMore');
 		$SR_SENTENCES[] = array('text' => '^HEAT$', 'action' => 'cbHeatingLess');
 		$SR_SENTENCES[] = array('text' => '^HOW HOUSE$', 'action' => 'cbHowHouse');
+		$SR_SENTENCES[] = array('text' => '^WHAT NIGHT', 'action' => 'cbTvProgramTonight');
 
 		$sp = new SpeechRecognize($SR_SENTENCES, $SR_WORDS);
 		if (!$sp->parseAndExecute($_GET['msg']))
@@ -131,5 +133,19 @@ function cbHowHouse($matches)
 		echo "<tell>La température ambiante est de $temp degré.</tell>";
 	else
 		echo "<tell>Impossible de récupérer la température...</tell>";
+}
+
+function cbTvProgramTonight($matches)
+{
+	$programs = TvPrograms::whatTonight();
+	if ($programs)
+	{
+		$tellMe = '';
+		foreach ($programs as $programChannel => $program)
+			$tellMe .= "Sur $programChannel, il y a " . $program['title'] . ". ";
+		echo "<tell>Voici le programme télé: $tellMe</tell>";
+	}
+	else
+		echo "<tell>Impossible d'avoir le programme télé...</tell>";
 }
 ?>

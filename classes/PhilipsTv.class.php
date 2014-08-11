@@ -119,7 +119,7 @@ class PhilipsTv
 				curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
 			}
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-			curl_setopt($ch, CURLOPT_TIMEOUT, 1);
+			curl_setopt($ch, CURLOPT_TIMEOUT, 2);
 			$response = curl_exec($ch);
 			curl_close($ch);
 			return $response;
