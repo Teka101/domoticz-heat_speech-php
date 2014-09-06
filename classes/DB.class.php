@@ -52,7 +52,9 @@ class DataBase
 	public function getData()
 	{
 		$query = $this->dbHandle->query('SELECT date, temperature FROM heating');
-		return $query->fetchAll(PDO::FETCH_COLUMN | PDO::FETCH_GROUP);
+		if ($query)
+			return $query->fetchAll(PDO::FETCH_COLUMN | PDO::FETCH_GROUP);
+		return array();
 	}
 
 	public function setDateTemperature($date, $temperature)
