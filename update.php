@@ -1,4 +1,6 @@
 <?php
+#Crontab:
+#  */5 * * * * cd /home/pi/domoticz-heat_speech-php && /usr/bin/php update.php >/dev/null 2>/dev/null
 
 require 'config.php';
 require 'classes/Domoticz.class.php';
@@ -17,13 +19,14 @@ if ($homeStatus)
 {
 	$oldTemp = $homeStatus->Temp;
 	$oldHumidity = $homeStatus->Humidity;
+	#TODO Check "LastUpdate" : "2014-09-14 17:36:34"
 }
 
 echo "Temperature: $temperature<br>\n";
 echo "Sending...<br>\n";
 Domoticz::pushTemperature($temperature);
 echo "<br>\n";
-if (($hdl = popen('/bin/cat /home/pi/DHT22.txt', 'r')))
+if (($hdl = popen('/home/pi/lol_dht22/loldht', 'r')))
 {
 	while (($str = fgets($hdl)))
 		if (preg_match('/^Humidity = ([0-9\.]+) % Temperature = ([0-9\.]+) \*C/', $str, $m) == 1)
@@ -42,7 +45,7 @@ print "Home humidity: $newHumidity [old=$oldHumidity diff=$diffHum]<br>\n";
 
 if ($newTemp != null && $newHumidity != null)
 {
-	if ($diffHum <= 10 && $diffHum <= 5)
+	if ($diffHum <= 15 && $diffTemp <= 5)
 	{
 		echo "Sending home informations...<br>\n";
 		Domoticz::pushHomeHumTemp($newHumidity, $newTemp);
