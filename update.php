@@ -6,6 +6,7 @@ require 'config.php';
 require 'classes/Domoticz.class.php';
 require 'classes/Heating.class.php';
 
+$tempOffset = -2.0;
 $hysteresis = 0.5;
 $oldTemp = null;
 $newTemp = null;
@@ -32,7 +33,7 @@ if (($hdl = popen('/home/pi/lol_dht22/loldht', 'r')))
 		if (preg_match('/^Humidity = ([0-9\.]+) % Temperature = ([0-9\.]+) \*C/', $str, $m) == 1)
 		{
 			$newHumidity = $m[1];
-			$newTemp = $m[2];
+			$newTemp = $m[2] + $tempOffset;
 		}
 	pclose($hdl);
 }
