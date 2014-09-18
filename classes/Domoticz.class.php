@@ -37,7 +37,7 @@ class Domoticz
 
 	static public function setHeaterStatus($status)
 	{
-		$ch = curl_init(DOMOTICZ_SERVER . '/json.htm?type=command&param=param=switchscene&idx=' . DOMOTICZ_HEAT_HOME_IDX . '&switchcmd=' . $status);
+		$ch = curl_init(DOMOTICZ_SERVER . '/json.htm?type=command&param=switchlight&idx=' . DOMOTICZ_HEATER_IDX . '&switchcmd=' . $status . '&level=0');
 		if ($ch)
 		{
 			curl_exec($ch);
