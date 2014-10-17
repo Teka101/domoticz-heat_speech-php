@@ -206,7 +206,7 @@ $(function()
 
 											msg.voiceURI = 'native';
 											msg.volume = 1; // 0 to 1
-											msg.rate = 1.1; // 0.1 (slow) to 10 (fast)
+											msg.rate = 1.5; // 0.1 (slow) to 10 (fast)
 											msg.pitch = 1; //0 to 2
 											msg.text = $(this).text();
 											msg.lang = '<?= SPEAK_LANGUAGE ?>';
