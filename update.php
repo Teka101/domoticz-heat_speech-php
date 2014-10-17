@@ -49,12 +49,12 @@ if ($newTemp != null && $newHumidity != null)
 	if ($diffHum <= 15 && $diffTemp <= 5)
 	{
 		echo "Sending home informations...<br>\n";
-		Domoticz::pushHomeHumTemp($newHumidity, $newTemp);
+		Domoticz::pushHomeHumTemp($newHumidity, str_replace(',', '.', $newTemp));
 		echo "<br>\n";
 
 		$heaterStatus = Domoticz::getHeaterStatus();
 		echo "Heater currentStatus: $heaterStatus<br>\n";
-		if ($newTemp < ($temperature - $hysteresis))
+		if ($newTemp <= ($temperature - $hysteresis))
 		{
 			if ($heaterStatus == 'Off')
 			{
@@ -62,7 +62,7 @@ if ($newTemp != null && $newHumidity != null)
 				Domoticz::setHeaterStatus('On');
 			}
 		}
-		else if ($newTemp > ($temperature + $hysteresis))
+		else if ($newTemp >= ($temperature + $hysteresis))
 		{
 			if ($heaterStatus == 'On')
 			{
