@@ -129,6 +129,9 @@ function cbHeating($offset)
 function cbHowHouse($matches)
 {
 	$temp = Domoticz::getHomeTemperature();
+	$locale = localeconv();
+	if ($locale)
+		$temp = number_format($temp, (is_float($temp) ? 1 : 0), $locale['decimal_point'], $locale['thousands_sep']);
 	if ($temp)
 		echo "<tell>La température ambiante est de $temp degré.</tell>";
 	else

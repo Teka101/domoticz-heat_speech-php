@@ -31,7 +31,10 @@ class Domoticz
 	{
 		$r = Domoticz::getDeviceResult(DOMOTICZ_HEAT_HOME_IDX);
 		if ($r)
-			return $r->Temp;
+		{
+			$rounded = intval($r->Temp);
+			return ($r->Temp == $rounded ? $rounded : $r->Temp);
+		}
 		return false;
 	}
 
