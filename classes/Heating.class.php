@@ -43,12 +43,28 @@ class Heating
 	{
 		$currentDate = localtime(time(), true);
 		$hh = $currentDate['tm_hour'];
+		$wDay = $currentDate['tm_wday'];
 		$now = mktime(0, 0, 0, $currentDate['tm_mon'] + 1, $currentDate['tm_mday'], 1900 + $currentDate['tm_year']);
 		$temperature = $this->getDateType($now);
 		if (!$temperature)
 			$temperature = $this->getDefaultType();
-		if ($temperature >= 19 && ($hh <= 5 || $hh >= 21))
-			$temperature--;
+		if ($temperature >= 19)
+		{
+			if ($wDay == 0 || $wDay == 6)
+			{
+				if ($hh <= 9 || $hh >= 21)
+					$temperature--;
+				else if ($hh <= 18)
+					$temperature -= 0.5;
+			}
+			else
+			{
+				if ($hh <= 5 || $hh >= 21)
+					$temperature--;
+				else if ($hh <= 18)
+					$temperature -= 0.5;
+			}
+		}
 		return $temperature;
 	}
 
