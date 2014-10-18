@@ -25,7 +25,7 @@ if ($homeStatus)
 
 echo "Temperature: $temperature<br>\n";
 echo "Sending...<br>\n";
-Domoticz::pushTemperature($temperature);
+Domoticz::pushTemperature(str_replace(',', '.', $temperature));
 echo "<br>\n";
 if (($hdl = popen('/home/pi/lol_dht22/loldht', 'r')))
 {
