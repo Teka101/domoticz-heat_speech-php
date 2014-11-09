@@ -53,6 +53,7 @@ if ($newTemp != null && $newHumidity != null)
 		echo "<br>\n";
 
 		$heaterStatus = Domoticz::getHeaterStatus();
+		$heaterStatus = str_replace(', Level: 100 %', '', $heaterStatus);
 		echo "Heater currentStatus: $heaterStatus<br>\n";
 		if ($newTemp <= ($temperature - $hysteresis))
 		{
