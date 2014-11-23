@@ -6,7 +6,7 @@ require 'config.php';
 require 'classes/Domoticz.class.php';
 require 'classes/Heating.class.php';
 
-$tempOffset = -2.0;
+$tempOffset = -1.0;
 $hysteresis = 0.5;
 $oldTemp = null;
 $newTemp = null;
@@ -57,7 +57,7 @@ if ($newTemp != null && $newHumidity != null)
 		echo "Heater currentStatus: $heaterStatus<br>\n";
 		if ($newTemp <= ($temperature - $hysteresis))
 		{
-			if ($heaterStatus == 'Off')
+			//if ($heaterStatus == 'Off')
 			{
 				echo "Turn on heater...<br>\n";
 				Domoticz::setHeaterStatus('On');
@@ -65,7 +65,7 @@ if ($newTemp != null && $newHumidity != null)
 		}
 		else if ($newTemp >= ($temperature + $hysteresis))
 		{
-			if ($heaterStatus == 'On')
+			//if ($heaterStatus == 'On')
 			{
 				echo "Turn off heater...<br>\n";
 				Domoticz::setHeaterStatus('Off');
