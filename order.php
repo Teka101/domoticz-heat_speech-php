@@ -53,7 +53,7 @@ function tell($msg)
 	global $isJson;
 
 	if ($isJson)
-		print '"tell:" "' . $msg . '"';
+		print '"tell": "' . $msg . '"';
 	else
 		print '<tell>' . $msg . '</tell>';
 }
