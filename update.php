@@ -8,6 +8,8 @@ require 'classes/Heating.class.php';
 
 $tempOffset = -1.0;
 $hysteresis = 0.5;
+$currentDate = new DateTime();
+$oldDate = null;
 $oldTemp = null;
 $newTemp = null;
 $oldHumidity = null;
@@ -20,7 +22,7 @@ if ($homeStatus)
 {
 	$oldTemp = $homeStatus->Temp;
 	$oldHumidity = $homeStatus->Humidity;
-	#TODO Check "LastUpdate" : "2014-09-14 17:36:34"
+	$oldDate = new DateTime($homeStatus->LastUpdate);
 }
 
 echo "Temperature: $temperature<br>\n";
@@ -38,15 +40,17 @@ if (($hdl = popen('/home/pi/lol_dht22/loldht', 'r')))
 	pclose($hdl);
 }
 
+$diffDate = ($oldDate == null ? 0 : abs($currentDate->getTimestamp() - $oldDate->getTimestamp()));
 $diffHum = ($oldHumidity == null ? 0 : abs($oldHumidity - $newHumidity));
 $diffTemp = ($oldTemp == null ? 0 : abs($oldTemp - $newTemp));
 
+print "Date: " . $currentDate->format('c') . " [old=" . $oldDate->format('c') . " diff=$diffDate]<br>\n";
 print "Home temperature: $newTemp [old=$oldTemp diff=$diffTemp]<br>\n";
 print "Home humidity: $newHumidity [old=$oldHumidity diff=$diffHum]<br>\n";
 
 if ($newTemp != null && $newHumidity != null)
 {
-	if ($diffHum <= 15 && $diffTemp <= 5)
+	if ($diffDate >= 1200 || ($diffHum <= 15 && $diffTemp <= 5))
 	{
 		echo "Sending home informations...<br>\n";
 		Domoticz::pushHomeHumTemp($newHumidity, str_replace(',', '.', $newTemp));
