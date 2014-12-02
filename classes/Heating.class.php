@@ -39,6 +39,16 @@ class Heating
 		}
 	}
 
+	public function getRawCurrentTemperature()
+	{
+		$currentDate = localtime(time(), true);
+		$now = mktime(0, 0, 0, $currentDate['tm_mon'] + 1, $currentDate['tm_mday'], 1900 + $currentDate['tm_year']);
+		$temperature = $this->getDateType($now);
+		if (!$temperature)
+			$temperature = $this->getDefaultType();
+		return $temperature;
+	}
+
 	public function getCurrentTemperature()
 	{
 		$currentDate = localtime(time(), true);
@@ -70,7 +80,7 @@ class Heating
 
 	public function addToCurrentTemperature($offset)
 	{
-		$newTemp = $this->getCurrentTemperature() + $offset;
+		$newTemp = $this->getRawCurrentTemperature() + $offset;
 		if ($this->setCurrentTemperature($newTemp))
 			return $newTemp;
 		return false;
