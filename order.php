@@ -35,6 +35,7 @@
 		$SR_SENTENCES[] = array('text' => '^HEAT$', 'action' => 'cbHeatingLess');
 		$SR_SENTENCES[] = array('text' => '^HOW HOUSE$', 'action' => 'cbHowHouse');
 		$SR_SENTENCES[] = array('text' => '^WHAT NIGHT', 'action' => 'cbTvProgramTonight');
+		$SR_SENTENCES[] = array('text' => '^GOOD NIGHT$', 'action' => 'cbGoodNight');
 
 		$sp = new SpeechRecognize($SR_SENTENCES, $SR_WORDS);
 		if (!$sp->parseAndExecute($_GET['msg']))
@@ -94,6 +95,15 @@ function cbLeaveHouse($matches)
 	if (PhilipsTv::stopTv(PHILIPS_TV))
 		$sent .= 'J\'ai éteins la télévision. ';
 	$sent .= 'Au revoir.';
+	tell($sent);
+}
+
+function cbGoodNight($matches)
+{
+	$sent = '';
+	if (PhilipsTv::watch(PHILIPS_TV, '2', 20, false) && PhilipsTv::stopTv(PHILIPS_TV))
+		$sent .= 'J\'ai éteins la télévision. ';
+	$sent .= 'Bonne nuit.';
 	tell($sent);
 }
 
