@@ -12,7 +12,7 @@ class Heating
 
 	public function	__construct($readWrite = false)
 	{
-		$this->typeDefault = 21;
+		$this->typeDefault = TEMP_DEFAULT;
 		$this->types = [ '12', '19', '20', '21', '22' ];
 		$this->db = new DataBase($readWrite);
 		$this->load();

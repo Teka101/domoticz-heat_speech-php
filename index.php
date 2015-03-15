@@ -101,7 +101,7 @@
 				}
 				else
 				{
-					$cType = 'type' . $heating->getDefaultType();
+					$cType = '';
 					$cTemp = $heating->getDefaultType();
 				}
 				echo ' id="d'.$cDate.'" class="calDate ' . $cType . '" title="' . $cTemp . '°">' . $cText;
